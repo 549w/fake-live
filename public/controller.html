@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>直播控制 - 控制台</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* 标题区域 */
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .header p {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    /* 主内容网格布局 */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* 卡片样式 */
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      padding: 25px;
+      color: #333;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #667eea;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* 在线人数显示 */
+    .online-count-display {
+      text-align: center;
+      padding: 30px 20px;
+    }
+
+    .count-number {
+      font-size: 64px;
+      font-weight: bold;
+      color: #667eea;
+      line-height: 1;
+      margin-bottom: 10px;
+    }
+
+    .count-label {
+      font-size: 16px;
+      color: #666;
+    }
+
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 15px;
+      padding: 8px 16px;
+      background: #f0f0f0;
+      border-radius: 20px;
+      font-size: 14px;
+    }
+
+    /* 在线人数设置区域 */
+    .online-count-settings {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+
+    .settings-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .settings-input {
+      flex: 1;
+      padding: 10px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .settings-input:focus {
+      border-color: #667eea;
+    }
+
+    .settings-button {
+      padding: 10px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      white-space: nowrap;
+    }
+
+    .settings-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .settings-button:active {
+      transform: translateY(0);
+    }
+
+    .quick-set-btns {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .quick-set-btn {
+      padding: 6px 12px;
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 16px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quick-set-btn:hover {
+      background: #667eea;
+      color: #fff;
+      border-color: #667eea;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      background: #4caf50;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.1); }
+    }
+
+    /* 评论发送区域 */
+    .comment-form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 14px;
+      font-weight: 500;
+      color: #555;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      padding: 12px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: #667eea;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+      font-family: inherit;
+    }
+
+    .send-button {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .send-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .send-button:active {
+      transform: translateY(0);
+    }
+
+    .send-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* 快速评论按钮 */
+    .quick-comments {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .quick-btn {
+      padding: 8px 14px;
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quick-btn:hover {
+      background: #667eea;
+      color: #fff;
+      border-color: #667eea;
+    }
+
+    /* 最近评论列表 */
+    .recent-comments {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .comment-item {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      transition: background 0.2s;
+    }
+
+    .comment-item:hover {
+      background: #f9f9f9;
+    }
+
+    .comment-item:last-child {
+      border-bottom: none;
+    }
+
+    .comment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .comment-username {
+      font-weight: bold;
+      color: #667eea;
+      font-size: 14px;
+    }
+
+    .comment-time {
+      font-size: 12px;
+      color: #999;
+    }
+
+    .comment-message {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #333;
+      word-wrap: break-word;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #999;
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+
+    /* 滚动条样式 */
+    .recent-comments::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .recent-comments::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .recent-comments::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 3px;
+    }
+
+    .recent-comments::-webkit-scrollbar-thumb:hover {
+      background: #999;
+    }
+
+    /* 连接状态提示 */
+    .connection-status {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 1000;
+      display: none;
+    }
+
+    .connection-status.show {
+      display: block;
+      animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <!-- 连接状态提示 -->
+  <div class="connection-status" id="connection-status"></div>
+
+  <div class="container">
+    <!-- 标题 -->
+    <div class="header">
+      <h1>🎬 直播控制中心</h1>
+      <p>实时监控和管理直播互动</p>
+    </div>
+
+    <!-- 主要内容区 -->
+    <div class="main-grid">
+      <!-- 左侧：在线人数和发送评论 -->
+      <div>
+        <!-- 在线人数卡片 -->
+        <div class="card" style="margin-bottom: 20px;">
+          <div class="card-title">
+            <span>👥</span>
+            <span>在线观众</span>
+          </div>
+          <div class="online-count-display">
+            <div class="count-number" id="online-count">0</div>
+            <div class="count-label">人正在观看</div>
+            <div class="status-indicator">
+              <div class="status-dot"></div>
+              <span>服务器已连接</span>
+            </div>
+
+            <!-- 在线人数设置 -->
+            <div class="online-count-settings">
+              <div class="settings-row">
+                <input
+                  type="number"
+                  id="count-input"
+                  class="settings-input"
+                  placeholder="设置人数"
+                  min="0"
+                  value="0"
+                />
+                <button class="settings-button" id="set-count-btn">
+                  设置
+                </button>
+              </div>
+              <div class="quick-set-btns">
+                <button class="quick-set-btn" data-count="100">100</button>
+                <button class="quick-set-btn" data-count="500">500</button>
+                <button class="quick-set-btn" data-count="1000">1K</button>
+                <button class="quick-set-btn" data-count="5000">5K</button>
+                <button class="quick-set-btn" data-count="10000">1W</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 发送评论卡片 -->
+        <div class="card">
+          <div class="card-title">
+            <span>💬</span>
+            <span>发送评论</span>
+          </div>
+          <div class="comment-form">
+            <div class="form-group">
+              <label for="username">用户名</label>
+              <input
+                type="text"
+                id="username"
+                placeholder="输入用户名..."
+                value="导演"
+                maxlength="20"
+              />
+            </div>
+            <div class="form-group">
+              <label for="message">评论内容</label>
+              <textarea
+                id="message"
+                placeholder="输入要发送到主播页面的评论..."
+                maxlength="500"
+              ></textarea>
+            </div>
+            <button class="send-button" id="send-btn">
+              📤 发送评论
+            </button>
+
+            <!-- 快速评论 -->
+            <div style="margin-top: 10px;">
+              <label style="font-size: 13px; color: #666;">快速评论：</label>
+              <div class="quick-comments">
+                <button class="quick-btn" data-text="太棒了！">太棒了！</button>
+                <button class="quick-btn" data-text="加油！">加油！</button>
+                <button class="quick-btn" data-text="666">666</button>
+                <button class="quick-btn" data-text="精彩！">精彩！</button>
+                <button class="quick-btn" data-text="继续加油">继续加油</button>
+                <button class="quick-btn" data-text="完美！">完美！</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右侧：最近评论 -->
+      <div class="card">
+        <div class="card-title">
+          <span>📝</span>
+          <span>最近评论</span>
+        </div>
+        <div class="recent-comments" id="recent-comments">
+          <div class="empty-state">
+            <div class="empty-state-icon">💭</div>
+            <p>暂无评论</p>
+            <p style="font-size: 12px; margin-top: 5px;">评论将在这里实时显示</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Socket.IO 客户端库 -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // 初始化 Socket.IO 连接
+    const socket = io();
+
+    // DOM 元素
+    const onlineCountElement = document.getElementById('online-count');
+    const recentCommentsElement = document.getElementById('recent-comments');
+    const usernameInput = document.getElementById('username');
+    const messageInput = document.getElementById('message');
+    const sendBtn = document.getElementById('send-btn');
+    const connectionStatus = document.getElementById('connection-status');
+    const countInput = document.getElementById('count-input');
+    const setCountBtn = document.getElementById('set-count-btn');
+
+    // 存储最近的评论（最多10条）
+    let recentComments = [];
+
+    /**
+     * 更新在线人数显示
+     */
+    socket.on('update-online-count', (count) => {
+      onlineCountElement.textContent = count;
+      console.log(`👥 在线人数: ${count}`);
+    });
+
+    /**
+     * 接收新评论
+     */
+    socket.on('new-comment', (comment) => {
+      addCommentToList(comment);
+    });
+
+    /**
+     * 接收评论历史
+     */
+    socket.on('comment-history', (history) => {
+      if (history.length > 0) {
+        recentComments = history.slice(-10);
+        renderComments();
+      }
+    });
+
+    /**
+     * 添加评论到列表
+     */
+    function addCommentToList(comment) {
+      // 添加到数组
+      recentComments.push(comment);
+
+      // 保持最多10条
+      if (recentComments.length > 10) {
+        recentComments.shift();
+      }
+
+      // 重新渲染
+      renderComments();
+    }
+
+    /**
+     * 渲染评论列表
+     */
+    function renderComments() {
+      if (recentComments.length === 0) {
+        recentCommentsElement.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">💭</div>
+            <p>暂无评论</p>
+            <p style="font-size: 12px; margin-top: 5px;">评论将在这里实时显示</p>
+          </div>
+        `;
+        return;
+      }
+
+      const html = recentComments.map(comment => {
+        const time = new Date(comment.timestamp).toLocaleTimeString('zh-CN', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+
+        return `
+          <div class="comment-item">
+            <div class="comment-header">
+              <span class="comment-username">${escapeHtml(comment.username)}</span>
+              <span class="comment-time">${time}</span>
+            </div>
+            <div class="comment-message">${escapeHtml(comment.message)}</div>
+          </div>
+        `;
+      }).reverse().join(''); // 最新的评论在前面
+
+      recentCommentsElement.innerHTML = html;
+    }
+
+    /**
+     * HTML 转义，防止 XSS
+     */
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    /**
+     * 发送评论
+     */
+    async function sendComment() {
+      const username = usernameInput.value.trim();
+      const message = messageInput.value.trim();
+
+      if (!username || !message) {
+        showStatus('请填写用户名和评论内容', 'error');
+        return;
+      }
+
+      // 禁用按钮
+      sendBtn.disabled = true;
+      sendBtn.textContent = '发送中...';
+
+      try {
+        // 通过 API 发送评论
+        const response = await fetch('/send-comment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, message })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showStatus('✅ 评论已发送', 'success');
+          messageInput.value = ''; // 清空消息框
+        } else {
+          showStatus('❌ 发送失败', 'error');
+        }
+      } catch (error) {
+        console.error('发送评论失败:', error);
+        showStatus('❌ 网络错误', 'error');
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.textContent = '📤 发送评论';
+      }
+    }
+
+    /**
+     * 显示状态提示
+     */
+    function showStatus(message, type) {
+      connectionStatus.textContent = message;
+      connectionStatus.style.background = type === 'success'
+        ? 'rgba(76, 175, 80, 0.9)'
+        : 'rgba(244, 67, 54, 0.9)';
+      connectionStatus.classList.add('show');
+
+      setTimeout(() => {
+        connectionStatus.classList.remove('show');
+      }, 2000);
+    }
+
+    /**
+     * 设置在线人数
+     */
+    async function setOnlineCount() {
+      const count = parseInt(countInput.value);
+
+      if (isNaN(count) || count < 0) {
+        showStatus('❌ 请输入有效的数字', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch('/set-online-count', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ count })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showStatus(`✅ 在线人数已设置为 ${count}`, 'success');
+          countInput.value = count;
+        } else {
+          showStatus('❌ 设置失败', 'error');
+        }
+      } catch (error) {
+        console.error('设置在线人数失败:', error);
+        showStatus('❌ 网络错误', 'error');
+      }
+    }
+
+    // 绑定事件
+    sendBtn.addEventListener('click', sendComment);
+
+    // 设置在线人数按钮
+    setCountBtn.addEventListener('click', setOnlineCount);
+
+    // 快速设置人数按钮
+    document.querySelectorAll('.quick-set-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        countInput.value = btn.dataset.count;
+        setOnlineCount();
+      });
+    });
+
+    // Enter 键设置人数
+    countInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        setOnlineCount();
+      }
+    });
+
+    // 快速评论按钮
+    document.querySelectorAll('.quick-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        messageInput.value = btn.dataset.text;
+        messageInput.focus();
+      });
+    });
+
+    // Enter 键发送（Ctrl+Enter 或 Cmd+Enter）
+    messageInput.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        sendComment();
+      }
+    });
+
+    // Socket.IO 连接状态
+    socket.on('connect', () => {
+      console.log('✅ 已连接到服务器');
+    });
+
+    socket.on('disconnect', () => {
+      console.log('❌ 与服务器断开连接');
+      showStatus('⚠️ 连接中断，正在重连...', 'error');
+    });
+
+    socket.on('reconnect', () => {
+      console.log('✅ 重新连接到服务器');
+      showStatus('✅ 已重新连接', 'success');
+    });
+  </script>
+</body>
+</html>

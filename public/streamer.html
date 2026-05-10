@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>直播画面 - 主播端</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #000;
+      color: #fff;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 视频容器 */
+    .video-container {
+      flex: 1;
+      position: relative;
+      background: #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    #camera-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* 在线人数显示 */
+    .online-count {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 10;
+    }
+
+    .online-dot {
+      width: 8px;
+      height: 8px;
+      background: #ff4757;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* 评论区 - 浮动在视频上方 */
+    .comments-overlay {
+      position: absolute;
+      bottom: 80px;
+      left: 0;
+      right: 0;
+      max-height: 50%;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .comments-list {
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: calc(50vh - 80px);
+      overflow-y: auto;
+    }
+
+    .comment-item {
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(10px);
+      padding: 8px 12px;
+      border-radius: 8px;
+      animation: slideIn 0.3s ease-out;
+      max-width: 85%;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .comment-username {
+      font-weight: bold;
+      color: #ffd700;
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+
+    .comment-message {
+      font-size: 14px;
+      line-height: 1.4;
+      word-wrap: break-word;
+      color: #fff;
+    }
+
+    .comment-time {
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 2px;
+    }
+
+    /* 输入框区域 - 固定在底部 */
+    .input-area {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 12px 15px;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.8));
+      display: flex;
+      gap: 10px;
+      z-index: 10;
+    }
+
+    #comment-input {
+      flex: 1;
+      padding: 10px 15px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+
+    #comment-input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    #send-btn {
+      padding: 10px 20px;
+      background: #ff4757;
+      border: none;
+      border-radius: 20px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    #send-btn:hover {
+      background: #ff3838;
+    }
+
+    #send-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* 无摄像头提示 */
+    .no-camera {
+      text-align: center;
+      padding: 20px;
+      color: #999;
+    }
+
+    /* 滚动条样式 */
+    .comments-list::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .comments-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .comments-list::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body>
+  <!-- 视频显示区域 -->
+  <div class="video-container">
+    <video id="camera-video" autoplay playsinline muted></video>
+    
+    <!-- 在线人数显示 -->
+    <div class="online-count">
+      <div class="online-dot"></div>
+      <span id="online-text">在线: 0</span>
+    </div>
+
+    <!-- 评论区 - 浮动在视频上方 -->
+    <div class="comments-overlay">
+      <div class="comments-list" id="comments-list">
+        <!-- 评论将动态添加到这里 -->
+      </div>
+    </div>
+
+    <!-- 输入框 - 固定在底部 -->
+    <div class="input-area">
+      <input
+        type="text"
+        id="comment-input"
+        placeholder="输入评论..."
+        maxlength="200"
+      />
+      <button id="send-btn">发送</button>
+    </div>
+  </div>
+
+  <!-- Socket.IO 客户端库 -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // 初始化 Socket.IO 连接
+    const socket = io();
+
+    // DOM 元素
+    const videoElement = document.getElementById('camera-video');
+    const commentsList = document.getElementById('comments-list');
+    const commentInput = document.getElementById('comment-input');
+    const sendBtn = document.getElementById('send-btn');
+    const onlineText = document.getElementById('online-text');
+
+    // 当前用户名称（可以自定义）
+    const currentUsername = '主播';
+
+    /**
+     * 启动前置摄像头
+     */
+    async function startCamera() {
+      try {
+        // 请求使用前置摄像头
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'user' // 使用前置摄像头
+          },
+          audio: false // 不需要音频
+        });
+
+        videoElement.srcObject = stream;
+        console.log('✅ 摄像头已启动');
+      } catch (error) {
+        console.error('❌ 无法访问摄像头:', error);
+        showNoCameraMessage();
+      }
+    }
+
+    /**
+     * 显示无摄像头提示
+     */
+    function showNoCameraMessage() {
+      videoElement.style.display = 'none';
+      const container = document.querySelector('.video-container');
+      const message = document.createElement('div');
+      message.className = 'no-camera';
+      message.innerHTML = `
+        <p style="font-size: 48px; margin-bottom: 10px;">📷</p>
+        <p>无法访问摄像头</p>
+        <p style="font-size: 12px; margin-top: 10px;">请允许浏览器访问摄像头权限</p>
+      `;
+      container.appendChild(message);
+    }
+
+    /**
+     * 更新在线人数显示
+     */
+    socket.on('update-online-count', (count) => {
+      onlineText.textContent = `在线: ${count}`;
+      console.log(`👥 在线人数: ${count}`);
+    });
+
+    /**
+     * 接收新评论
+     */
+    socket.on('new-comment', (comment) => {
+      addCommentToDisplay(comment);
+    });
+
+    /**
+     * 接收评论历史
+     */
+    socket.on('comment-history', (history) => {
+      history.forEach(comment => {
+        addCommentToDisplay(comment);
+      });
+    });
+
+    /**
+     * 将评论添加到显示列表
+     */
+    function addCommentToDisplay(comment) {
+      const commentItem = document.createElement('div');
+      commentItem.className = 'comment-item';
+
+      const time = new Date(comment.timestamp).toLocaleTimeString('zh-CN', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      commentItem.innerHTML = `
+        <div class="comment-username">${escapeHtml(comment.username)}</div>
+        <div class="comment-message">${escapeHtml(comment.message)}</div>
+        <div class="comment-time">${time}</div>
+      `;
+
+      commentsList.appendChild(commentItem);
+
+      // 自动滚动到底部
+      commentsList.scrollTop = commentsList.scrollHeight;
+
+      // 限制显示的评论数量（最多保留50条）
+      while (commentsList.children.length > 50) {
+        commentsList.removeChild(commentsList.firstChild);
+      }
+    }
+
+    /**
+     * HTML 转义，防止 XSS
+     */
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    /**
+     * 发送评论
+     */
+    function sendComment() {
+      const message = commentInput.value.trim();
+
+      if (!message) {
+        return;
+      }
+
+      // 通过 Socket.IO 发送评论
+      socket.emit('send-comment', {
+        username: currentUsername,
+        message: message
+      });
+
+      // 清空输入框
+      commentInput.value = '';
+    }
+
+    // 绑定事件
+    sendBtn.addEventListener('click', sendComment);
+
+    commentInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        sendComment();
+      }
+    });
+
+    // 页面加载完成后启动摄像头
+    window.addEventListener('load', () => {
+      startCamera();
+    });
+
+    // 处理页面可见性变化（重新激活摄像头）
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && !videoElement.srcObject) {
+        startCamera();
+      }
+    });
+  </script>
+</body>
+</html>
