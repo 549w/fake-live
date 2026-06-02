@@ -81,7 +81,7 @@
     }
 
     .count-number {
-      font-size: 64px;
+      font-size: 80px;
       font-weight: bold;
       color: #667eea;
       line-height: 1;
@@ -89,7 +89,7 @@
     }
 
     .count-label {
-      font-size: 16px;
+      font-size: 20px;
       color: #666;
     }
 
@@ -292,6 +292,7 @@
       padding: 12px;
       border-bottom: 1px solid #eee;
       transition: background 0.2s;
+      position: relative;
     }
 
     .comment-item:hover {
@@ -302,26 +303,57 @@
       border-bottom: none;
     }
 
+    /* 删除按钮 */
+    .delete-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 24px;
+      height: 24px;
+      border: none;
+      background: rgba(244, 67, 54, 0.1);
+      color: #f44336;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: all 0.2s;
+    }
+
+    .comment-item:hover .delete-btn {
+      opacity: 1;
+    }
+
+    .delete-btn:hover {
+      background: #f44336;
+      color: #fff;
+    }
+
     .comment-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 6px;
+      padding-right: 30px;
     }
 
     .comment-username {
       font-weight: bold;
       color: #667eea;
-      font-size: 14px;
+      font-size: 18px;
     }
 
     .comment-time {
-      font-size: 12px;
+      font-size: 14px;
       color: #999;
     }
 
     .comment-message {
-      font-size: 14px;
+      font-size: 18px;
       line-height: 1.5;
       color: #333;
       word-wrap: break-word;
@@ -336,6 +368,24 @@
     .empty-state-icon {
       font-size: 48px;
       margin-bottom: 10px;
+    }
+
+    /* 清空评论按钮 */
+    .clear-comments-btn {
+      padding: 6px 12px;
+      background: rgba(244, 67, 54, 0.1);
+      border: 1px solid rgba(244, 67, 54, 0.3);
+      border-radius: 6px;
+      color: #f44336;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .clear-comments-btn:hover {
+      background: #f44336;
+      color: #fff;
+      border-color: #f44336;
     }
 
     /* 滚动条样式 */
@@ -354,6 +404,156 @@
 
     .recent-comments::-webkit-scrollbar-thumb:hover {
       background: #999;
+    }
+
+    /* SC（醒目留言）样式 */
+    .sc-section {
+      margin-top: 20px;
+    }
+
+    .sc-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .sc-form .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .sc-amount-input {
+      position: relative;
+    }
+
+    .sc-amount-input::before {
+      content: '¥';
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #666;
+      font-weight: bold;
+    }
+
+    .sc-amount-input input {
+      padding-left: 30px !important;
+    }
+
+    .sc-send-btn {
+      grid-column: 1 / -1;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #ff6b6b 0%, #ffa502 100%);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .sc-send-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+    }
+
+    .sc-list {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .sc-item {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      position: relative;
+      border-left: 4px solid;
+      background: linear-gradient(to right, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.8));
+    }
+
+    .sc-item.high { border-left-color: #ff6b6b; }
+    .sc-item.medium { border-left-color: #ffa502; }
+    .sc-item.normal { border-left-color: #2ed573; }
+    .sc-item.low { border-left-color: #1e90ff; }
+
+    .sc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .sc-user {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sc-username {
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .sc-amount {
+      font-size: 18px;
+      font-weight: bold;
+      color: #ff6b6b;
+    }
+
+    .sc-location {
+      font-size: 12px;
+      color: #999;
+      background: #f0f0f0;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    .sc-message {
+      font-size: 15px;
+      line-height: 1.5;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .sc-time {
+      font-size: 12px;
+      color: #999;
+    }
+
+    .sc-remove-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 4px 10px;
+      background: rgba(244, 67, 54, 0.1);
+      border: 1px solid rgba(244, 67, 54, 0.3);
+      border-radius: 4px;
+      color: #f44336;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .sc-remove-btn:hover {
+      background: #f44336;
+      color: #fff;
+    }
+
+    .sc-clear-btn {
+      padding: 6px 12px;
+      background: rgba(244, 67, 54, 0.1);
+      border: 1px solid rgba(244, 67, 54, 0.3);
+      border-radius: 6px;
+      color: #f44336;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .sc-clear-btn:hover {
+      background: #f44336;
+      color: #fff;
     }
 
     /* 连接状态提示 */
@@ -424,6 +624,20 @@
                   设置
                 </button>
               </div>
+
+              <!-- 过渡时间设置 -->
+              <div style="margin-top: 12px; display: flex; align-items: center; gap: 10px; justify-content: center;">
+                <label style="font-size: 13px; color: #666;">过渡时间:</label>
+                <select id="duration-select" style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; outline: none;">
+                  <option value="1000">1秒</option>
+                  <option value="2000">2秒</option>
+                  <option value="3000" selected>3秒</option>
+                  <option value="5000">5秒</option>
+                  <option value="8000">8秒</option>
+                  <option value="10000">10秒</option>
+                </select>
+              </div>
+
               <div class="quick-set-btns">
                 <button class="quick-set-btn" data-count="100">100</button>
                 <button class="quick-set-btn" data-count="500">500</button>
@@ -485,6 +699,9 @@
         <div class="card-title">
           <span>📝</span>
           <span>最近评论</span>
+          <button class="clear-comments-btn" onclick="clearAllComments()" style="margin-left: auto;">
+            🗑️ 清空
+          </button>
         </div>
         <div class="recent-comments" id="recent-comments">
           <div class="empty-state">
@@ -493,15 +710,66 @@
             <p style="font-size: 12px; margin-top: 5px;">评论将在这里实时显示</p>
           </div>
         </div>
+
+        <!-- SC（醒目留言）卡片 -->
+        <div class="card sc-section">
+          <div class="card-title">
+            <span>💰</span>
+            <span>SC 醒目留言</span>
+            <button class="sc-clear-btn" onclick="clearAllSCs()" style="margin-left: auto;">
+              🗑️ 清空
+            </button>
+          </div>
+
+          <!-- SC 发送表单 -->
+          <div class="sc-form">
+            <div class="form-group">
+              <label for="sc-username">昵称</label>
+              <input type="text" id="sc-username" placeholder="用户昵称" maxlength="20" />
+            </div>
+            <div class="form-group sc-amount-input">
+              <label for="sc-amount">金额</label>
+              <input type="number" id="sc-amount" placeholder="0.00" min="0" step="0.01" />
+            </div>
+            <div class="form-group">
+              <label for="sc-location">IP属地</label>
+              <input type="text" id="sc-location" placeholder="如：北京" maxlength="20" />
+            </div>
+            <div class="form-group">
+              <label>&nbsp;</label>
+              <div style="display: flex; gap: 8px;">
+                <button class="quick-set-btn" onclick="setSCAmount(10)" style="flex: 1;">¥10</button>
+                <button class="quick-set-btn" onclick="setSCAmount(50)" style="flex: 1;">¥50</button>
+                <button class="quick-set-btn" onclick="setSCAmount(100)" style="flex: 1;">¥100</button>
+              </div>
+            </div>
+            <div class="form-group full-width">
+              <label for="sc-message">留言内容</label>
+              <textarea id="sc-message" placeholder="输入醒目留言内容..." maxlength="200"></textarea>
+            </div>
+            <button class="sc-send-btn" onclick="sendSC()">
+              📤 发送 SC
+            </button>
+          </div>
+
+          <!-- 活跃 SC 列表 -->
+          <div class="sc-list" id="sc-list">
+            <div class="empty-state">
+              <div class="empty-state-icon">💭</div>
+              <p>暂无 SC</p>
+              <p style="font-size: 12px; margin-top: 5px;">发送的 SC 将在这里显示</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Socket.IO 客户端库 -->
-  <script src="/socket.io/socket.io.js"></script>
+  <script src="/live/socket.io/socket.io.js"></script>
   <script>
     // 初始化 Socket.IO 连接
-    const socket = io();
+    const socket = io({ path: '/live/socket.io' });
 
     // DOM 元素
     const onlineCountElement = document.getElementById('online-count');
@@ -512,14 +780,20 @@
     const connectionStatus = document.getElementById('connection-status');
     const countInput = document.getElementById('count-input');
     const setCountBtn = document.getElementById('set-count-btn');
+    const durationSelect = document.getElementById('duration-select');
 
     // 存储最近的评论（最多10条）
     let recentComments = [];
 
+    // 存储活跃的 SC 列表
+    let activeSCs = [];
+
     /**
      * 更新在线人数显示
      */
-    socket.on('update-online-count', (count) => {
+    socket.on('update-online-count', (data) => {
+      // 兼容旧格式（直接传数字）和新格式（对象）
+      const count = typeof data === 'number' ? data : data.targetCount;
       onlineCountElement.textContent = count;
       console.log(`👥 在线人数: ${count}`);
     });
@@ -539,6 +813,55 @@
         recentComments = history.slice(-10);
         renderComments();
       }
+    });
+
+    /**
+     * 接收删除评论事件（从其他客户端）
+     */
+    socket.on('delete-comment', (data) => {
+      const commentId = data.commentId;
+      recentComments = recentComments.filter(c => c.id !== commentId);
+      renderComments();
+    });
+
+    /**
+     * 接收清空评论事件（从其他客户端）
+     */
+    socket.on('clear-comments', () => {
+      recentComments = [];
+      renderComments();
+    });
+
+    /**
+     * 接收 SC 列表（初始化时）
+     */
+    socket.on('sc-list', (scs) => {
+      activeSCs = scs;
+      renderSCs();
+    });
+
+    /**
+     * 接收新 SC
+     */
+    socket.on('new-sc', (sc) => {
+      activeSCs.push(sc);
+      renderSCs();
+    });
+
+    /**
+     * 接收删除 SC 事件
+     */
+    socket.on('remove-sc', (data) => {
+      activeSCs = activeSCs.filter(sc => sc.id !== data.scId);
+      renderSCs();
+    });
+
+    /**
+     * 接收清空 SC 事件
+     */
+    socket.on('clear-scs', () => {
+      activeSCs = [];
+      renderSCs();
     });
 
     /**
@@ -580,7 +903,8 @@
         });
 
         return `
-          <div class="comment-item">
+          <div class="comment-item" data-comment-id="${comment.id}">
+            <button class="delete-btn" onclick="deleteComment(${comment.id})" title="删除评论">×</button>
             <div class="comment-header">
               <span class="comment-username">${escapeHtml(comment.username)}</span>
               <span class="comment-time">${time}</span>
@@ -665,6 +989,7 @@
      */
     async function setOnlineCount() {
       const count = parseInt(countInput.value);
+      const duration = parseInt(durationSelect.value);
 
       if (isNaN(count) || count < 0) {
         showStatus('❌ 请输入有效的数字', 'error');
@@ -677,13 +1002,14 @@
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ count })
+          body: JSON.stringify({ count, duration })
         });
 
         const result = await response.json();
 
         if (result.success) {
-          showStatus(`✅ 在线人数已设置为 ${count}`, 'success');
+          const durationSec = duration / 1000;
+          showStatus(`✅ 将在 ${durationSec}秒内过渡到 ${count} 人`, 'success');
           countInput.value = count;
         } else {
           showStatus('❌ 设置失败', 'error');
@@ -692,6 +1018,227 @@
         console.error('设置在线人数失败:', error);
         showStatus('❌ 网络错误', 'error');
       }
+    }
+
+    /**
+     * 删除评论
+     */
+    async function deleteComment(commentId) {
+      if (!confirm('确定要删除这条评论吗？')) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/delete-comment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ commentId })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showStatus('✅ 评论已删除', 'success');
+          // 从本地数组中移除
+          recentComments = recentComments.filter(c => c.id !== commentId);
+          renderComments();
+        } else {
+          showStatus('❌ 删除失败', 'error');
+        }
+      } catch (error) {
+        console.error('删除评论失败:', error);
+        showStatus('❌ 网络错误', 'error');
+      }
+    }
+
+    /**
+     * 清空所有评论
+     */
+    async function clearAllComments() {
+      if (!confirm('确定要清空所有评论吗？此操作不可恢复。')) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/clear-comments', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showStatus('✅ 所有评论已清空', 'success');
+          recentComments = [];
+          renderComments();
+        } else {
+          showStatus('❌ 清空失败', 'error');
+        }
+      } catch (error) {
+        console.error('清空评论失败:', error);
+        showStatus('❌ 网络错误', 'error');
+      }
+    }
+
+    /**
+     * 设置 SC 金额快捷按钮
+     */
+    function setSCAmount(amount) {
+      document.getElementById('sc-amount').value = amount;
+    }
+
+    /**
+     * 发送 SC
+     */
+    async function sendSC() {
+      const username = document.getElementById('sc-username').value.trim();
+      const message = document.getElementById('sc-message').value.trim();
+      const amount = document.getElementById('sc-amount').value;
+      const location = document.getElementById('sc-location').value.trim();
+
+      if (!username || !message || !amount) {
+        showStatus('❌ 请填写昵称、内容和金额', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch('/send-sc', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, message, amount, location })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showStatus(`✅ SC 已发送 ¥${amount}`, 'success');
+          // 清空表单
+          document.getElementById('sc-message').value = '';
+          document.getElementById('sc-amount').value = '';
+        } else {
+          showStatus('❌ 发送失败', 'error');
+        }
+      } catch (error) {
+        console.error('发送 SC 失败:', error);
+        showStatus('❌ 网络错误', 'error');
+      }
+    }
+
+    /**
+     * 删除 SC
+     */
+    async function removeSC(scId) {
+      if (!confirm('确定要撤下这条 SC 吗？')) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/remove-sc', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ scId })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showStatus('✅ SC 已撤下', 'success');
+          activeSCs = activeSCs.filter(sc => sc.id !== scId);
+          renderSCs();
+        } else {
+          showStatus('❌ 撤下失败', 'error');
+        }
+      } catch (error) {
+        console.error('撤下 SC 失败:', error);
+        showStatus('❌ 网络错误', 'error');
+      }
+    }
+
+    /**
+     * 清空所有 SC
+     */
+    async function clearAllSCs() {
+      if (!confirm('确定要清空所有 SC 吗？此操作不可恢复。')) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/clear-scs', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showStatus('✅ 所有 SC 已清空', 'success');
+          activeSCs = [];
+          renderSCs();
+        } else {
+          showStatus('❌ 清空失败', 'error');
+        }
+      } catch (error) {
+        console.error('清空 SC 失败:', error);
+        showStatus('❌ 网络错误', 'error');
+      }
+    }
+
+    /**
+     * 渲染 SC 列表
+     */
+    function renderSCs() {
+      const scListElement = document.getElementById('sc-list');
+
+      if (activeSCs.length === 0) {
+        scListElement.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">💭</div>
+            <p>暂无 SC</p>
+            <p style="font-size: 12px; margin-top: 5px;">发送的 SC 将在这里显示</p>
+          </div>
+        `;
+        return;
+      }
+
+      const html = activeSCs.map(sc => {
+        const time = new Date(sc.timestamp).toLocaleTimeString('zh-CN', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+
+        // 根据金额确定等级
+        let levelClass = 'low';
+        if (sc.amount >= 100) levelClass = 'high';
+        else if (sc.amount >= 50) levelClass = 'medium';
+        else if (sc.amount >= 10) levelClass = 'normal';
+
+        return `
+          <div class="sc-item ${levelClass}" style="border-left-color: ${sc.color}">
+            <button class="sc-remove-btn" onclick="removeSC(${sc.id})">撤下</button>
+            <div class="sc-header">
+              <div class="sc-user">
+                <span class="sc-username">${escapeHtml(sc.username)}</span>
+                <span class="sc-location">📍 ${escapeHtml(sc.location)}</span>
+              </div>
+              <span class="sc-amount" style="color: ${sc.color}">¥${sc.amount.toFixed(2)}</span>
+            </div>
+            <div class="sc-message">${escapeHtml(sc.message)}</div>
+            <div class="sc-time">${time}</div>
+          </div>
+        `;
+      }).reverse().join('');
+
+      scListElement.innerHTML = html;
     }
 
     // 绑定事件
@@ -744,6 +1291,14 @@
       console.log('✅ 重新连接到服务器');
       showStatus('✅ 已重新连接', 'success');
     });
+
+    // 将函数暴露到全局作用域（供 onclick 调用）
+    window.deleteComment = deleteComment;
+    window.clearAllComments = clearAllComments;
+    window.setSCAmount = setSCAmount;
+    window.sendSC = sendSC;
+    window.removeSC = removeSC;
+    window.clearAllSCs = clearAllSCs;
   </script>
 </body>
 </html>

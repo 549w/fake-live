@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>直播画面 - 主播端</title>
+  <title>呢喃呢喃直播</title>
   <style>
     * {
       margin: 0;
@@ -44,18 +44,18 @@
       top: 15px;
       right: 15px;
       background: rgba(0, 0, 0, 0.7);
-      padding: 8px 12px;
+      padding: 10px 16px;
       border-radius: 20px;
-      font-size: 14px;
+      font-size: 18px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       z-index: 10;
     }
 
     .online-dot {
-      width: 8px;
-      height: 8px;
+      width: 10px;
+      height: 10px;
       background: #ff4757;
       border-radius: 50%;
       animation: pulse 1.5s infinite;
@@ -95,6 +95,96 @@
       max-width: 85%;
     }
 
+    /* SC（醒目留言）样式 */
+    .sc-overlay {
+      position: absolute;
+      top: 60px;
+      left: 15px;
+      right: 15px;
+      z-index: 6;
+      pointer-events: none;
+    }
+
+    .sc-item {
+      background: linear-gradient(135deg, rgba(255, 107, 107, 0.95), rgba(255, 165, 2, 0.95));
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 15px 20px;
+      margin-bottom: 12px;
+      animation: scSlideIn 0.5s ease-out;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    @keyframes scSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .sc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .sc-user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sc-username {
+      font-weight: bold;
+      font-size: 18px;
+      color: #fff;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .sc-location {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.2);
+      padding: 2px 10px;
+      border-radius: 12px;
+    }
+
+    .sc-amount {
+      font-size: 22px;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .sc-message {
+      font-size: 20px;
+      line-height: 1.5;
+      color: #fff;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+      word-wrap: break-word;
+    }
+
+    .sc-remove-animation {
+      animation: scSlideOut 0.3s ease-in forwards;
+    }
+
+    @keyframes scSlideOut {
+      from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+      }
+    }
+
     @keyframes slideIn {
       from {
         opacity: 0;
@@ -109,21 +199,21 @@
     .comment-username {
       font-weight: bold;
       color: #ffd700;
-      font-size: 13px;
-      margin-bottom: 2px;
+      font-size: 16px;
+      margin-bottom: 4px;
     }
 
     .comment-message {
-      font-size: 14px;
-      line-height: 1.4;
+      font-size: 18px;
+      line-height: 1.5;
       word-wrap: break-word;
       color: #fff;
     }
 
     .comment-time {
-      font-size: 10px;
-      color: rgba(255, 255, 255, 0.6);
-      margin-top: 2px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 4px;
     }
 
     /* 输入框区域 - 固定在底部 */
@@ -207,6 +297,11 @@
       <span id="online-text">在线: 0</span>
     </div>
 
+    <!-- SC（醒目留言）- 浮动在视频上方顶部 -->
+    <div class="sc-overlay" id="sc-overlay">
+      <!-- SC 将动态添加到这里 -->
+    </div>
+
     <!-- 评论区 - 浮动在视频上方 -->
     <div class="comments-overlay">
       <div class="comments-list" id="comments-list">
@@ -227,10 +322,10 @@
   </div>
 
   <!-- Socket.IO 客户端库 -->
-  <script src="/socket.io/socket.io.js"></script>
+  <script src="/live/socket.io/socket.io.js"></script>
   <script>
     // 初始化 Socket.IO 连接
-    const socket = io();
+    const socket = io({ path: '/live/socket.io' });
 
     // DOM 元素
     const videoElement = document.getElementById('camera-video');
@@ -238,9 +333,175 @@
     const commentInput = document.getElementById('comment-input');
     const sendBtn = document.getElementById('send-btn');
     const onlineText = document.getElementById('online-text');
+    const scOverlay = document.getElementById('sc-overlay');
 
     // 当前用户名称（可以自定义）
     const currentUsername = '主播';
+
+    // 在线人数动画相关变量
+    let currentDisplayCount = 0;  // 当前显示的人数
+    let targetCount = 0;          // 目标人数
+    let animationFrameId = null;  // 动画帧ID
+    let fluctuationIntervalId = null;  // 波动定时器ID
+    let isTransitioning = false;  // 是否正在过渡中
+
+    /**
+     * 启动人数波动效果
+     * 在目标值附近随机上下波动，模拟真实直播间
+     */
+    function startFluctuation() {
+      // 清除之前的波动定时器
+      if (fluctuationIntervalId) {
+        clearInterval(fluctuationIntervalId);
+      }
+
+      // 根据人数规模决定波动幅度
+      const getFluctuationRange = (count) => {
+        if (count < 100) return 3;        // 小于100人：±3人
+        if (count < 500) return 8;        // 500人以下：±8人
+        if (count < 1000) return 15;      // 1000人以下：±15人
+        if (count < 5000) return 30;      // 5000人以下：±30人
+        if (count < 10000) return 50;     // 1万人以下：±50人
+        return 80;                         // 1万人以上：±80人
+      };
+
+      const range = getFluctuationRange(targetCount);
+
+      // 每2-4秒波动一次（随机间隔）
+      const scheduleNextFluctuation = () => {
+        const delay = 2000 + Math.random() * 2000; // 2-4秒
+
+        fluctuationIntervalId = setTimeout(() => {
+          if (isTransitioning) {
+            // 如果正在过渡，等待过渡完成后再波动
+            scheduleNextFluctuation();
+            return;
+          }
+
+          // 生成随机波动值（正负都有可能）
+          const fluctuation = Math.floor(Math.random() * range * 2) - range;
+          
+          // 计算波动后的人数（确保不低于0）
+          const fluctuatedCount = Math.max(0, targetCount + fluctuation);
+
+          // 小幅动画过渡到波动值
+          animateToValue(fluctuatedCount, 800);
+
+          // 波动保持1.5-2.5秒后回到目标值
+          setTimeout(() => {
+            if (!isTransitioning) {
+              animateToValue(targetCount, 1000);
+            }
+          }, 1500 + Math.random() * 1000);
+
+          // 安排下一次波动
+          scheduleNextFluctuation();
+        }, delay);
+      };
+
+      // 启动第一次波动
+      scheduleNextFluctuation();
+    }
+
+    /**
+     * 动画过渡到指定值（用于波动效果）
+     */
+    function animateToValue(targetValue, duration) {
+      const startValue = currentDisplayCount;
+      const diff = targetValue - startValue;
+      
+      if (Math.abs(diff) < 0.5) return;
+
+      const startTime = performance.now();
+
+      function animate(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // 使用 easeOutQuad 缓动，更轻快
+        const easedProgress = 1 - (1 - progress) * (1 - progress);
+
+        currentDisplayCount = startValue + diff * easedProgress;
+        onlineText.textContent = `在线: ${Math.round(currentDisplayCount)}`;
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    /**
+     * 平滑过渡到目标人数
+     * @param {number} target - 目标人数
+     * @param {number} duration - 过渡时间（毫秒）
+     */
+    function smoothTransitionTo(target, duration) {
+      // 取消之前的动画
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+
+      const startCount = currentDisplayCount;
+      const diff = target - startCount;
+      
+      // 如果差值很小，直接设置
+      if (Math.abs(diff) < 1) {
+        currentDisplayCount = target;
+        onlineText.textContent = `在线: ${Math.round(target)}`;
+        return;
+      }
+
+      // 如果时间为0，立即设置
+      if (duration === 0) {
+        currentDisplayCount = target;
+        onlineText.textContent = `在线: ${Math.round(target)}`;
+        return;
+      }
+
+      const startTime = performance.now();
+
+      /**
+       * 动画函数 - 使用缓动函数实现平滑过渡
+       */
+      function animate(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // 使用 easeInOutCubic 缓动函数，使过渡更自然
+        const easedProgress = progress < 0.5
+          ? 4 * progress * progress * progress
+          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+        // 计算当前应该显示的人数
+        currentDisplayCount = startCount + diff * easedProgress;
+
+        // 更新显示
+        onlineText.textContent = `在线: ${Math.round(currentDisplayCount)}`;
+
+        // 如果动画未完成，继续下一帧
+        if (progress < 1) {
+          isTransitioning = true;
+          animationFrameId = requestAnimationFrame(animate);
+        } else {
+          // 确保最终值准确
+          currentDisplayCount = target;
+          targetCount = target;
+          onlineText.textContent = `在线: ${Math.round(target)}`;
+          animationFrameId = null;
+          isTransitioning = false;
+
+          // 过渡完成后，启动波动效果
+          startFluctuation();
+        }
+      }
+
+      // 标记为正在过渡
+      isTransitioning = true;
+      // 启动动画
+      animationFrameId = requestAnimationFrame(animate);
+    }
 
     /**
      * 启动前置摄像头
@@ -280,11 +541,18 @@
     }
 
     /**
-     * 更新在线人数显示
+     * 更新在线人数显示（支持平滑过渡）
      */
-    socket.on('update-online-count', (count) => {
-      onlineText.textContent = `在线: ${count}`;
-      console.log(`👥 在线人数: ${count}`);
+    socket.on('update-online-count', (data) => {
+      // 兼容旧格式（直接传数字）和新格式（对象）
+      const target = typeof data === 'number' ? data : data.targetCount;
+      const duration = typeof data === 'object' ? (data.duration || 3000) : 3000;
+
+      // 设置新目标，smoothTransitionTo 完成后会自动启动波动
+      targetCount = target;
+      smoothTransitionTo(target, duration);
+
+      console.log(`👥 在线人数将在 ${duration}ms 内过渡到: ${target}，之后将随机波动`);
     });
 
     /**
@@ -302,6 +570,80 @@
         addCommentToDisplay(comment);
       });
     });
+
+    /**
+     * 接收 SC 列表（初始化时）
+     */
+    socket.on('sc-list', (scs) => {
+      // 清空现有 SC
+      scOverlay.innerHTML = '';
+      // 显示所有活跃 SC
+      scs.forEach(sc => addSCToDisplay(sc));
+    });
+
+    /**
+     * 接收新 SC
+     */
+    socket.on('new-sc', (sc) => {
+      addSCToDisplay(sc);
+    });
+
+    /**
+     * 接收删除 SC 事件
+     */
+    socket.on('remove-sc', (data) => {
+      const scId = data.scId;
+      const scElement = document.querySelector(`[data-sc-id="${scId}"]`);
+      if (scElement) {
+        scElement.classList.add('sc-remove-animation');
+        setTimeout(() => {
+          scElement.remove();
+        }, 300);
+      }
+    });
+
+    /**
+     * 接收清空 SC 事件
+     */
+    socket.on('clear-scs', () => {
+      scOverlay.innerHTML = '';
+    });
+
+    /**
+     * 将 SC 添加到显示
+     */
+    function addSCToDisplay(sc) {
+      const scElement = document.createElement('div');
+      scElement.className = 'sc-item';
+      scElement.setAttribute('data-sc-id', sc.id);
+      scElement.style.background = `linear-gradient(135deg, ${sc.color}dd, ${sc.color}bb)`;
+
+      const time = new Date(sc.timestamp).toLocaleTimeString('zh-CN', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      scElement.innerHTML = `
+        <div class="sc-header">
+          <div class="sc-user-info">
+            <span class="sc-username">${escapeHtml(sc.username)}</span>
+            <span class="sc-location">📍 ${escapeHtml(sc.location)}</span>
+          </div>
+          <span class="sc-amount">¥${sc.amount.toFixed(2)}</span>
+        </div>
+        <div class="sc-message">${escapeHtml(sc.message)}</div>
+      `;
+
+      scOverlay.appendChild(scElement);
+
+      // 自动滚动到顶部（如果有多个 SC）
+      scOverlay.scrollTop = 0;
+
+      // 限制显示的 SC 数量（最多保留5条）
+      while (scOverlay.children.length > 5) {
+        scOverlay.removeChild(scOverlay.firstChild);
+      }
+    }
 
     /**
      * 将评论添加到显示列表
